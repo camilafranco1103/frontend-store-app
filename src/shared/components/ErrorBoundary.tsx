@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { AlertTriangle } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -34,16 +35,18 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <span className="text-5xl select-none">💥</span>
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/30">
+            <AlertTriangle size={28} className="text-red-500 dark:text-red-400" />
+          </div>
           <div className="space-y-1">
-            <p className="font-semibold text-slate-700">Algo falló al renderizar esta sección</p>
-            <p className="text-slate-400 text-sm font-mono max-w-md break-words">
+            <p className="font-semibold text-stone-700 dark:text-stone-200">Algo falló al renderizar esta sección</p>
+            <p className="text-stone-400 dark:text-stone-500 text-sm font-mono max-w-md break-words">
               {this.state.message}
             </p>
           </div>
           <button
             onClick={this.handleReset}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition-colors"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl font-medium transition-colors"
           >
             Reintentar
           </button>

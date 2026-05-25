@@ -1,26 +1,27 @@
 import { Link } from 'react-router-dom'
+import { MapPinOff } from 'lucide-react'
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="flex flex-col items-center gap-5 text-center max-w-sm">
-        <span className="text-8xl select-none">🔍</span>
-        <div className="space-y-2">
-          <p className="text-slate-400 text-sm font-semibold tracking-widest uppercase">
-            Error 404
-          </p>
-          <h1 className="text-3xl font-bold text-slate-800">Página no encontrada</h1>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            La ruta que buscás no existe o fue movida.
-          </p>
-        </div>
-        <Link
-          to="/"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2.5 rounded-xl font-medium transition-colors"
-        >
-          Volver al inicio
-        </Link>
+    <div className="flex flex-col items-center justify-center gap-5 py-24 text-center">
+      <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-stone-100 dark:bg-stone-800">
+        <MapPinOff size={36} className="text-stone-400 dark:text-stone-500" />
       </div>
+      <div className="space-y-2">
+        <p className="text-orange-500 dark:text-orange-400 text-sm font-semibold tracking-widest uppercase">
+          Error 404
+        </p>
+        <h1 className="text-3xl font-bold text-stone-800 dark:text-stone-100">Página no encontrada</h1>
+        <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed max-w-sm">
+          La ruta que buscás no existe o fue movida.
+        </p>
+      </div>
+      <Link
+        to="/"
+        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2.5 rounded-xl font-medium transition-colors"
+      >
+        Volver al inicio
+      </Link>
     </div>
   )
 }
