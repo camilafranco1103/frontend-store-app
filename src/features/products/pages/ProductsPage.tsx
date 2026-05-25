@@ -57,15 +57,15 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Nuestros Productos</h1>
-        <p className="text-slate-500 mt-1">
+        <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">
+          Nuestros Productos
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 mt-1">
           Explorá nuestro catálogo y armá tu pedido.
         </p>
       </div>
 
-      {/* Filtros — siempre visibles, se cargan progresivamente */}
       <div className="space-y-3">
         <SearchBar value={search} onChange={setSearch} />
         <CategoryFilter
@@ -76,10 +76,8 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* Estado: cargando */}
       {loadingProducts && <SkeletonGrid count={8} />}
 
-      {/* Estado: error de red o servidor */}
       {productsError && !loadingProducts && (
         <ErrorMessage
           error={productsRawError}
@@ -87,18 +85,17 @@ export default function ProductsPage() {
         />
       )}
 
-      {/* Estado: carga exitosa */}
       {!loadingProducts && !productsError && (
         <>
           {filtered.length > 0 ? (
             <>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-stone-500 dark:text-stone-400">
                 {filtered.length}{' '}
                 {filtered.length === 1 ? 'producto encontrado' : 'productos encontrados'}
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="ml-2 text-emerald-600 hover:underline font-medium"
+                    className="ml-2 text-orange-500 dark:text-orange-400 hover:underline font-medium"
                   >
                     Limpiar filtros
                   </button>
@@ -108,7 +105,6 @@ export default function ProductsPage() {
             </>
           ) : (
             <EmptyState
-              icon={hasActiveFilters ? '🔎' : '📦'}
               title={hasActiveFilters ? 'Sin resultados' : 'No hay productos disponibles'}
               description={
                 hasActiveFilters

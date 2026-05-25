@@ -1,28 +1,47 @@
+import { useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
+import { ShoppingBag, ShoppingCart } from 'lucide-react'
 import ErrorBoundary from './shared/components/ErrorBoundary'
+import ThemeToggle from './shared/components/ThemeToggle'
+import { useThemeStore } from './shared/store/themeStore'
 
 export default function App() {
+  const isDark = useThemeStore((s) => s.isDark)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [isDark])
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 transition-colors duration-300">
+      <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🛍️</span>
-            <span className="text-xl font-bold text-emerald-600">StoreApp</span>
+            <ShoppingBag size={22} className="text-orange-500" />
+            <span className="text-xl font-bold text-stone-900 dark:text-stone-100">
+              Store<span className="text-orange-500">App</span>
+            </span>
           </Link>
-          <nav className="flex items-center gap-6">
-            <Link to="/" className="text-slate-600 hover:text-emerald-600 font-medium transition-colors">
+
+          <nav className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="text-stone-600 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 font-medium transition-colors text-sm"
+            >
               Productos
             </Link>
             <Link
               to="/carrito"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
             >
-              🛒 Carrito
+              <ShoppingCart size={16} />
+              Carrito
             </Link>
+            <ThemeToggle />
           </nav>
         </div>
       </header>
+
       <main className="max-w-6xl mx-auto px-4 py-8">
         <ErrorBoundary>
           <Outlet />
