@@ -15,7 +15,8 @@ function formatPrice(price: number): string {
 }
 
 export default function ProductCard({ producto, categoriaMap }: ProductCardProps) {
-  const principalCat = producto.categorias.find((c) => c.es_principal) ?? producto.categorias[0]
+  const categorias = producto.categorias ?? []
+  const principalCat = categorias.find((c) => c.es_principal) ?? categorias[0]
   const categoria = principalCat ? categoriaMap.get(principalCat.categoria_id) : undefined
 
   return (

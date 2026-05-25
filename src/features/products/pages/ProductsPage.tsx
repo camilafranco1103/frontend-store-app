@@ -42,7 +42,7 @@ export default function ProductsPage() {
 
       const catMatch =
         selectedCategory === null ||
-        p.categorias.some((c) => c.categoria_id === selectedCategory)
+        (p.categorias ?? []).some((c) => c.categoria_id === selectedCategory)
 
       return nameMatch && catMatch
     })
