@@ -36,7 +36,7 @@ export default function RouteError() {
         </div>
         <Link
           to="/"
-          className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl font-medium transition-colors"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium transition-colors"
         >
           Volver al inicio
         </Link>

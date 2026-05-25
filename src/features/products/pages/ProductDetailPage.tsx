@@ -101,7 +101,7 @@ export default function ProductDetailPage() {
           {/* Category + availability */}
           <div className="flex flex-wrap gap-2 items-center">
             {categoria && (
-              <span className="px-3 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold rounded-full border border-orange-100 dark:border-orange-500/20">
+              <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-full border border-indigo-100 dark:border-indigo-500/20">
                 {categoria.nombre}
               </span>
             )}
@@ -139,7 +139,7 @@ export default function ProductDetailPage() {
           </h1>
 
           {/* Price */}
-          <p className="text-4xl font-bold text-orange-500 dark:text-orange-400">
+          <p className="text-4xl font-bold text-indigo-500 dark:text-indigo-400">
             {formatPrice(product.price)}
           </p>
 
@@ -178,7 +178,7 @@ export default function ProductDetailPage() {
             <button
               onClick={handleAddToCart}
               disabled={!product.disponible || added}
-              className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-stone-300 dark:disabled:bg-stone-700 disabled:cursor-not-allowed text-white disabled:text-stone-400 dark:disabled:text-stone-500 font-semibold py-3.5 rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-stone-300 dark:disabled:bg-stone-700 disabled:cursor-not-allowed text-white disabled:text-stone-400 dark:disabled:text-stone-500 font-semibold py-3.5 rounded-xl transition-colors"
             >
               <ShoppingCart size={18} />
               {added ? 'Agregado al carrito' : 'Agregar al carrito'}
@@ -223,7 +223,7 @@ function BackButton() {
   return (
     <Link
       to="/"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
     >
       <ArrowLeft size={15} />
       Volver a productos

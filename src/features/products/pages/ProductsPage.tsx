@@ -95,7 +95,7 @@ export default function ProductsPage() {
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="ml-2 text-orange-500 dark:text-orange-400 hover:underline font-medium"
+                    className="ml-2 text-indigo-500 dark:text-indigo-400 hover:underline font-medium"
                   >
                     Limpiar filtros
                   </button>

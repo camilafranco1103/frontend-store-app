@@ -11,8 +11,8 @@ export default function ThemeToggle() {
       className={`
         relative inline-flex h-7 w-13 shrink-0 cursor-pointer items-center rounded-full
         border-2 border-transparent transition-colors duration-300 focus:outline-none
-        focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2
-        ${isDark ? 'bg-orange-500' : 'bg-stone-300 dark:bg-stone-600'}
+        focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2
+        ${isDark ? 'bg-indigo-500' : 'bg-stone-300 dark:bg-stone-600'}
       `}
       style={{ width: '3.25rem' }}
     >
@@ -24,7 +24,7 @@ export default function ThemeToggle() {
         `}
       >
         {isDark
-          ? <Moon size={11} className="text-orange-500" />
+          ? <Moon size={11} className="text-indigo-500" />
           : <Sun size={11} className="text-stone-400" />
         }
       </span>

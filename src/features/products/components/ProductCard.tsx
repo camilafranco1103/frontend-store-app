@@ -45,12 +45,12 @@ export default function ProductCard({ producto, categoriaMap }: ProductCardProps
 
       <div className="p-4 flex flex-col flex-1 gap-2">
         {categoria && (
-          <span className="self-start px-2.5 py-0.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold rounded-full border border-orange-100 dark:border-orange-500/20">
+          <span className="self-start px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-full border border-indigo-100 dark:border-indigo-500/20">
             {categoria.nombre}
           </span>
         )}
 
-        <h3 className="font-semibold text-stone-800 dark:text-stone-100 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors leading-snug line-clamp-2">
+        <h3 className="font-semibold text-stone-800 dark:text-stone-100 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors leading-snug line-clamp-2">
           {producto.name}
         </h3>
 
@@ -62,7 +62,7 @@ export default function ProductCard({ producto, categoriaMap }: ProductCardProps
           <span className="text-lg font-bold text-stone-900 dark:text-stone-100">
             {formatPrice(producto.price)}
           </span>
-          <span className="flex items-center gap-1 text-xs font-medium text-orange-500 dark:text-orange-400 group-hover:gap-2 transition-all">
+          <span className="flex items-center gap-1 text-xs font-medium text-indigo-500 dark:text-indigo-400 group-hover:gap-2 transition-all">
             Ver detalle <ArrowRight size={12} />
           </span>
         </div>

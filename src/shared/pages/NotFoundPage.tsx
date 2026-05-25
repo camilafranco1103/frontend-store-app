@@ -8,7 +8,7 @@ export default function NotFoundPage() {
         <MapPinOff size={36} className="text-stone-400 dark:text-stone-500" />
       </div>
       <div className="space-y-2">
-        <p className="text-orange-500 dark:text-orange-400 text-sm font-semibold tracking-widest uppercase">
+        <p className="text-indigo-500 dark:text-indigo-400 text-sm font-semibold tracking-widest uppercase">
           Error 404
         </p>
         <h1 className="text-3xl font-bold text-stone-800 dark:text-stone-100">Página no encontrada</h1>
@@ -18,7 +18,7 @@ export default function NotFoundPage() {
       </div>
       <Link
         to="/"
-        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2.5 rounded-xl font-medium transition-colors"
+        className="bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-2.5 rounded-xl font-medium transition-colors"
       >
         Volver al inicio
       </Link>

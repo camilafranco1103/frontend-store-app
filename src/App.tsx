@@ -20,27 +20,27 @@ export default function App() {
       <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <ShoppingBag size={22} className="text-orange-500" />
+            <ShoppingBag size={22} className="text-indigo-500" />
             <span className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              Store<span className="text-orange-500">App</span>
+              Store<span className="text-indigo-500">App</span>
             </span>
           </Link>
 
           <nav className="flex items-center gap-4">
             <Link
               to="/"
-              className="text-stone-600 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 font-medium transition-colors text-sm"
+              className="text-stone-600 dark:text-stone-400 hover:text-indigo-500 dark:hover:text-indigo-400 font-medium transition-colors text-sm"
             >
               Productos
             </Link>
             <Link
               to="/carrito"
-              className="relative flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
+              className="relative flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
             >
               <ShoppingCart size={16} />
               Carrito
               {totalItems > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 bg-white dark:bg-stone-900 text-orange-500 text-xs font-bold rounded-full border border-orange-500">
+                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 bg-white dark:bg-stone-900 text-indigo-500 text-xs font-bold rounded-full border border-indigo-500">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}

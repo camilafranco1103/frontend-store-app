@@ -38,14 +38,14 @@ export default function EmptyState({
         onAction ? (
           <button
             onClick={onAction}
-            className="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
+            className="mt-2 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
           >
             {actionLabel}
           </button>
         ) : (
           <Link
             to={actionTo!}
-            className="mt-2 inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
+            className="mt-2 inline-block bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
           >
             {actionLabel}
           </Link>

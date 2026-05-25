@@ -35,8 +35,8 @@ export default function CategoryFilter({
         onClick={() => onChange(null)}
         className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
           selected === null
-            ? 'bg-orange-500 text-white shadow-sm'
-            : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-500 dark:hover:text-orange-400'
+            ? 'bg-indigo-500 text-white shadow-sm'
+            : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-500 dark:hover:text-indigo-400'
         }`}
       >
         Todos
@@ -48,8 +48,8 @@ export default function CategoryFilter({
           onClick={() => onChange(cat.id)}
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
             selected === cat.id
-              ? 'bg-orange-500 text-white shadow-sm'
-              : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-500 dark:hover:text-orange-400'
+              ? 'bg-indigo-500 text-white shadow-sm'
+              : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-500 dark:hover:text-indigo-400'
           }`}
         >
           {cat.nombre}
