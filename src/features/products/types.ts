@@ -29,6 +29,13 @@ export interface Producto {
   ingredientes: ProductoIngrediente[] | null
 }
 
+export interface Ingrediente {
+  id: number
+  name: string
+  description: string
+  esAlergeno: boolean
+}
+
 export interface PaginatedResponse<T> {
   items: T[]
   page: number
@@ -37,3 +44,4 @@ export interface PaginatedResponse<T> {
 }
 
 export type CategoriaMap = Map<number, Categoria>
+export type IngredienteMap = Map<number, Ingrediente>

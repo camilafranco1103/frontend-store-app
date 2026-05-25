@@ -1,5 +1,5 @@
 import api from '../../../lib/axios'
-import type { Categoria, PaginatedResponse, Producto } from '../types'
+import type { Categoria, Ingrediente, PaginatedResponse, Producto } from '../types'
 
 export async function getProducts(page = 1, pageSize = 100): Promise<Producto[]> {
   const { data } = await api.get<PaginatedResponse<Producto>>('/productos/', {
@@ -29,5 +29,16 @@ export async function getCategorias(): Promise<Categoria[]> {
   }
 
   console.log(`[products.service] ${data.length} categorías cargadas`)
+  return data
+}
+
+export async function getIngredientes(): Promise<Ingrediente[]> {
+  const { data } = await api.get<Ingrediente[]>('/Ingredientes/')
+
+  if (!Array.isArray(data)) {
+    console.error('[products.service] Respuesta inesperada de /Ingredientes/:', data)
+    return []
+  }
+
   return data
 }

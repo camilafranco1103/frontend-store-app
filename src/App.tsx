@@ -4,9 +4,12 @@ import { ShoppingBag, ShoppingCart } from 'lucide-react'
 import ErrorBoundary from './shared/components/ErrorBoundary'
 import ThemeToggle from './shared/components/ThemeToggle'
 import { useThemeStore } from './shared/store/themeStore'
+import { useCartStore, cartTotalItems } from './shared/store/cartStore'
 
 export default function App() {
   const isDark = useThemeStore((s) => s.isDark)
+  const cartItems = useCartStore((s) => s.items)
+  const totalItems = cartTotalItems(cartItems)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
@@ -32,10 +35,15 @@ export default function App() {
             </Link>
             <Link
               to="/carrito"
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
+              className="relative flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
             >
               <ShoppingCart size={16} />
               Carrito
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 bg-white dark:bg-stone-900 text-orange-500 text-xs font-bold rounded-full border border-orange-500">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
             </Link>
             <ThemeToggle />
           </nav>
