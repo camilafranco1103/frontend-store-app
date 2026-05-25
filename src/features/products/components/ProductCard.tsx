@@ -15,21 +15,26 @@ function formatPrice(price: number | null | undefined): string {
   })
 }
 
+const DEFAULT_IMAGE = 'https://i.ibb.co/233KrcLV/pizza.webp'
+
 export default function ProductCard({ producto, categoriaMap }: ProductCardProps) {
   const categorias = producto.categorias ?? []
   const principalCat = categorias.find((c) => c.es_principal) ?? categorias[0]
   const categoria = principalCat ? categoriaMap.get(principalCat.categoria_id) : undefined
+  const imageSrc = categoria?.imagen_url ?? DEFAULT_IMAGE
 
   return (
     <Link
       to={`/productos/${producto.id}`}
       className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
     >
-      {/* Imagen placeholder */}
-      <div className="h-48 bg-gradient-to-br from-emerald-50 via-slate-50 to-slate-100 flex items-center justify-center relative overflow-hidden">
-        <span className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">
-          🍽️
-        </span>
+      <div className="h-48 relative overflow-hidden bg-slate-100">
+        <img
+          src={imageSrc}
+          alt={producto.name ?? 'Producto'}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => { e.currentTarget.src = DEFAULT_IMAGE }}
+        />
         {!producto.disponible && (
           <span className="absolute top-2 right-2 bg-slate-700/80 text-white text-xs font-medium px-2 py-0.5 rounded-full">
             Sin stock
