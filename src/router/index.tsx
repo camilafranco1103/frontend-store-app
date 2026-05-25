@@ -4,6 +4,7 @@ import ProductsPage from '../features/products/pages/ProductsPage'
 import ProductDetailPage from '../features/products/pages/ProductDetailPage'
 import CartPage from '../features/cart/pages/CartPage'
 import RouteError from '../shared/components/RouteError'
+import NotFoundPage from '../shared/pages/NotFoundPage'
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ const router = createBrowserRouter([
       { index: true, element: <ProductsPage /> },
       { path: 'productos/:id', element: <ProductDetailPage /> },
       { path: 'carrito', element: <CartPage /> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

@@ -6,7 +6,8 @@ interface ProductCardProps {
   categoriaMap: CategoriaMap
 }
 
-function formatPrice(price: number): string {
+function formatPrice(price: number | null | undefined): string {
+  if (price == null) return 'Sin precio'
   return price.toLocaleString('es-AR', {
     style: 'currency',
     currency: 'ARS',

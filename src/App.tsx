@@ -1,4 +1,5 @@
 import { Outlet, Link } from 'react-router-dom'
+import ErrorBoundary from './shared/components/ErrorBoundary'
 
 export default function App() {
   return (
@@ -23,7 +24,9 @@ export default function App() {
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

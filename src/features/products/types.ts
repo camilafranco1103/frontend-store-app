@@ -21,10 +21,10 @@ export interface ProductoIngrediente {
 
 export interface Producto {
   id: number
-  name: string
-  price: number
-  stock_cantidad: number
-  disponible: boolean
+  name: string | null
+  price: number | null
+  stock_cantidad: number | null
+  disponible: boolean | null
   categorias: ProductoCategoria[] | null
   ingredientes: ProductoIngrediente[] | null
 }
