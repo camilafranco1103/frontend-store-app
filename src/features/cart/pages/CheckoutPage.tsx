@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCartStore, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
 import { createGuestOrder } from '../services/orders.service'
@@ -13,6 +13,53 @@ function formatPrice(price: number): string {
   })
 }
 
+interface FormErrors {
+  nombre?: string
+  telefono?: string
+  notas?: string
+}
+
+function validate(nombre: string, telefono: string, notas: string): FormErrors {
+  const errs: FormErrors = {}
+
+  const nombreTrimmed = nombre.trim()
+  if (!nombreTrimmed) {
+    errs.nombre = 'El nombre es requerido.'
+  } else if (nombreTrimmed.length < 2) {
+    errs.nombre = 'El nombre debe tener al menos 2 caracteres.'
+  } else if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(nombreTrimmed)) {
+    errs.nombre = 'El nombre solo puede contener letras y espacios.'
+  }
+
+  const telefonoTrimmed = telefono.trim()
+  const digitsOnly = telefonoTrimmed.replace(/\D/g, '')
+  if (!telefonoTrimmed) {
+    errs.telefono = 'El teléfono es requerido.'
+  } else if (!/^[\d\s+\-().]+$/.test(telefonoTrimmed)) {
+    errs.telefono = 'Solo se permiten dígitos y los caracteres + - ( ).'
+  } else if (digitsOnly.length < 8) {
+    errs.telefono = 'El teléfono debe tener al menos 8 dígitos.'
+  } else if (digitsOnly.length > 15) {
+    errs.telefono = 'El teléfono no puede superar los 15 dígitos.'
+  }
+
+  if (notas.length > 300) {
+    errs.notas = `Máximo 300 caracteres (${notas.length}/300).`
+  }
+
+  return errs
+}
+
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null
+  return (
+    <p className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 mt-1">
+      <AlertCircle size={11} className="shrink-0" />
+      {msg}
+    </p>
+  )
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const items = useCartStore((s) => s.items)
@@ -21,8 +68,9 @@ export default function CheckoutPage() {
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [notas, setNotas] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     if (items.length === 0) navigate('/carrito', { replace: true })
@@ -30,11 +78,41 @@ export default function CheckoutPage() {
 
   const totalPrice = cartTotalPrice(items)
 
+  function touch(field: string) {
+    setTouched((t) => ({ ...t, [field]: true }))
+    const errs = validate(nombre, telefono, notas)
+    setErrors(errs)
+  }
+
+  function showError(field: keyof FormErrors) {
+    return (submitted || touched[field]) ? errors[field] : undefined
+  }
+
+  function inputClass(field: keyof FormErrors) {
+    const hasError = showError(field)
+    return `w-full px-3.5 py-2.5 rounded-xl text-sm border transition
+      bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100
+      placeholder-stone-400 dark:placeholder-stone-500
+      focus:outline-none focus:ring-2 focus:ring-indigo-500
+      ${hasError
+        ? 'border-red-400 dark:border-red-500 focus:ring-red-400'
+        : 'border-stone-200 dark:border-stone-700'
+      }`
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setLoading(true)
+    setSubmitted(true)
 
+    const errs = validate(nombre, telefono, notas)
+    setErrors(errs)
+
+    if (Object.keys(errs).length > 0) {
+      toast.error('Revisá los campos antes de continuar.')
+      return
+    }
+
+    const toastId = toast.loading('Enviando tu pedido...')
     try {
       const order = await createGuestOrder({
         nombre_cliente: nombre.trim(),
@@ -48,20 +126,29 @@ export default function CheckoutPage() {
           subtotal_snapshot: item.price * item.quantity,
         })),
       })
+
+      toast.success(`¡Pedido #${order.id} confirmado!`, { id: toastId, duration: 5000 })
       clearCart()
-      navigate('/pedido-confirmado', { state: { orderId: order.id, nombre: order.nombre_cliente, total: order.total } })
+      navigate('/pedido-confirmado', {
+        state: {
+          orderId: order.id,
+          nombre: order.nombre_cliente,
+          telefono: order.telefono,
+          total: order.total,
+          fecha: new Date().toISOString(),
+          resumen: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+        },
+      })
     } catch {
-      const msg = 'No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.'
-      setError(msg)
-      toast.error(msg)
-    } finally {
-      setLoading(false)
+      toast.error('No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.', {
+        id: toastId,
+        duration: 5000,
+      })
     }
   }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
       <div>
         <Link
           to="/carrito"
@@ -78,10 +165,11 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
         {/* Form */}
-        <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="lg:col-span-3 space-y-4">
           <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 p-5 space-y-4">
             <h2 className="font-semibold text-stone-800 dark:text-stone-100">Tus datos</h2>
 
+            {/* Nombre */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
                 Nombre completo <span className="text-red-400">*</span>
@@ -89,16 +177,19 @@ export default function CheckoutPage() {
               <input
                 type="text"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                required
+                onChange={(e) => {
+                  setNombre(e.target.value)
+                  if (touched.nombre || submitted) setErrors(validate(e.target.value, telefono, notas))
+                }}
+                onBlur={() => touch('nombre')}
                 placeholder="Ej: María González"
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-stone-200 dark:border-stone-700
-                  bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100
-                  placeholder-stone-400 dark:placeholder-stone-500
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                autoComplete="name"
+                className={inputClass('nombre')}
               />
+              <FieldError msg={showError('nombre')} />
             </div>
 
+            {/* Teléfono */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
                 Teléfono <span className="text-red-400">*</span>
@@ -106,57 +197,57 @@ export default function CheckoutPage() {
               <input
                 type="tel"
                 value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                required
+                onChange={(e) => {
+                  setTelefono(e.target.value)
+                  if (touched.telefono || submitted) setErrors(validate(nombre, e.target.value, notas))
+                }}
+                onBlur={() => touch('telefono')}
                 placeholder="Ej: 11 4567-8901"
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-stone-200 dark:border-stone-700
-                  bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100
-                  placeholder-stone-400 dark:placeholder-stone-500
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                autoComplete="tel"
+                className={inputClass('telefono')}
               />
+              <FieldError msg={showError('telefono')} />
+              {!showError('telefono') && (
+                <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">
+                  Solo números. También podés usar +, -, ( )
+                </p>
+              )}
             </div>
 
+            {/* Notas */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
                 Notas adicionales
+                <span className="ml-1.5 text-stone-400 font-normal">(opcional)</span>
               </label>
               <textarea
                 value={notas}
-                onChange={(e) => setNotas(e.target.value)}
+                onChange={(e) => {
+                  setNotas(e.target.value)
+                  if (touched.notas || submitted) setErrors(validate(nombre, telefono, e.target.value))
+                }}
+                onBlur={() => touch('notas')}
                 rows={3}
+                maxLength={310}
                 placeholder="Instrucciones especiales, alergias, etc."
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-stone-200 dark:border-stone-700
-                  bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100
-                  placeholder-stone-400 dark:placeholder-stone-500
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none"
+                className={`${inputClass('notas')} resize-none`}
               />
+              <div className="flex items-start justify-between">
+                <FieldError msg={showError('notas')} />
+                <span className={`text-xs ml-auto ${notas.length > 300 ? 'text-red-400' : 'text-stone-400 dark:text-stone-500'}`}>
+                  {notas.length}/300
+                </span>
+              </div>
             </div>
           </div>
 
-          {error && (
-            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-              <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 disabled:cursor-not-allowed
+            className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600
               text-white font-semibold py-3.5 rounded-xl transition-colors"
           >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Procesando...
-              </>
-            ) : (
-              <>
-                Confirmar pedido
-                <ArrowRight size={16} />
-              </>
-            )}
+            Confirmar pedido
+            <ArrowRight size={16} />
           </button>
         </form>
 
