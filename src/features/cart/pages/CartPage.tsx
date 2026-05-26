@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShoppingCart } from 'lucide-react'
 import { useCartStore, cartTotalItems, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
 
@@ -13,6 +13,7 @@ function formatPrice(price: number): string {
 }
 
 export default function CartPage() {
+  const navigate = useNavigate()
   const items = useCartStore((s) => s.items)
   const clearCart = useCartStore((s) => s.clearCart)
 
@@ -91,7 +92,7 @@ export default function CartPage() {
 
           <button
             className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3.5 rounded-xl transition-colors"
-            onClick={() => alert('Funcionalidad de pago — próximamente')}
+            onClick={() => navigate('/checkout')}
           >
             Confirmar pedido
             <ArrowRight size={16} />
