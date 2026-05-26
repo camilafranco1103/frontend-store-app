@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShoppingCart } from 'lucide-react'
+import { toast } from 'sonner'
 import { useCartStore, cartTotalItems, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
 
 const DEFAULT_IMAGE = 'https://i.ibb.co/233KrcLV/pizza.webp'
@@ -54,7 +55,7 @@ export default function CartPage() {
           </p>
         </div>
         <button
-          onClick={clearCart}
+          onClick={() => { clearCart(); toast.info('Carrito vaciado') }}
           className="flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-red-500 dark:hover:text-red-400 transition-colors font-medium"
         >
           <Trash2 size={14} />
@@ -114,6 +115,11 @@ function CartItemRow({ item }: { item: CartItem }) {
   const updateQuantity = useCartStore((s) => s.updateQuantity)
   const removeItem = useCartStore((s) => s.removeItem)
 
+  function handleRemove() {
+    removeItem(item.id)
+    toast.info(`${item.name} eliminado del carrito`)
+  }
+
   return (
     <div className="flex gap-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 p-4">
       {/* Image */}
@@ -136,7 +142,7 @@ function CartItemRow({ item }: { item: CartItem }) {
             {item.name}
           </Link>
           <button
-            onClick={() => removeItem(item.id)}
+            onClick={handleRemove}
             className="shrink-0 text-stone-300 dark:text-stone-600 hover:text-red-400 dark:hover:text-red-400 transition-colors"
             aria-label="Eliminar producto"
           >

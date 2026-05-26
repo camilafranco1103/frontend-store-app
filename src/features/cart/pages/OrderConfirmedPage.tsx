@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { CheckCircle, ShoppingBag } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatPrice(price: number): string {
   return price.toLocaleString('es-AR', {
@@ -16,6 +18,13 @@ export default function OrderConfirmedPage() {
     nombre?: string
     total?: number
   }
+
+  useEffect(() => {
+    toast.success(
+      orderId != null ? `Pedido #${orderId} confirmado con éxito` : 'Pedido confirmado con éxito',
+      { duration: 5000 },
+    )
+  }, [orderId])
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 py-20 text-center max-w-md mx-auto">

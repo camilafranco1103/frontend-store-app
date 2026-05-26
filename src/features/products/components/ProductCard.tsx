@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Minus, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import type { CategoriaMap, Producto } from '../types'
 import { useCartStore } from '../../../shared/store/cartStore'
 
@@ -42,14 +43,19 @@ export default function ProductCard({ producto, categoriaMap }: ProductCardProps
       price: producto.price ?? 0,
       imageSrc,
     })
+    toast.success(`${producto.name} agregado al carrito`)
   }
 
   function handleDecrease() {
+    if (inCart === 1) toast.info(`${producto.name} quitado del carrito`)
     updateQuantity(producto.id, inCart - 1)
   }
 
   function handleIncrease() {
-    if (atStockLimit) return
+    if (atStockLimit) {
+      toast.warning('Stock máximo alcanzado para este producto')
+      return
+    }
     updateQuantity(producto.id, inCart + 1)
   }
 

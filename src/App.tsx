@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import { ShoppingBag, ShoppingCart } from 'lucide-react'
+import { Toaster } from 'sonner'
 import ErrorBoundary from './shared/components/ErrorBoundary'
 import ThemeToggle from './shared/components/ThemeToggle'
 import { useThemeStore } from './shared/store/themeStore'
@@ -55,6 +56,17 @@ export default function App() {
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      <Toaster
+        position="bottom-right"
+        theme={isDark ? 'dark' : 'light'}
+        richColors
+        closeButton
+        toastOptions={{
+          duration: 3500,
+          style: { fontFamily: 'inherit' },
+        }}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, Package, AlertCircle, Minus, Plus, Leaf } from 'lucide-react'
+import { toast } from 'sonner'
 import { useProduct } from '../hooks/useProduct'
 import { useCategories } from '../hooks/useCategories'
 import { useIngredientes } from '../hooks/useIngredientes'
@@ -25,7 +26,6 @@ export default function ProductDetailPage() {
   const productId = Number(id)
 
   const [quantity, setQuantity] = useState(1)
-  const [added, setAdded] = useState(false)
 
   const { data: product, isLoading, isError, error, refetch } = useProduct(productId)
   const { data: categories = [] } = useCategories()
@@ -77,8 +77,11 @@ export default function ProductDetailPage() {
         imageSrc,
       })
     }
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    toast.success(
+      quantity === 1
+        ? `${product.name} agregado al carrito`
+        : `${quantity}× ${product.name} agregados al carrito`,
+    )
   }
 
   return (
@@ -177,11 +180,11 @@ export default function ProductDetailPage() {
 
             <button
               onClick={handleAddToCart}
-              disabled={!product.disponible || added}
+              disabled={!product.disponible}
               className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-stone-300 dark:disabled:bg-stone-700 disabled:cursor-not-allowed text-white disabled:text-stone-400 dark:disabled:text-stone-500 font-semibold py-3.5 rounded-xl transition-colors"
             >
               <ShoppingCart size={18} />
-              {added ? 'Agregado al carrito' : 'Agregar al carrito'}
+              Agregar al carrito
             </button>
           </div>
 

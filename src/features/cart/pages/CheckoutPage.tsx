@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { useCartStore, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
 import { createGuestOrder } from '../services/orders.service'
 
@@ -50,7 +51,9 @@ export default function CheckoutPage() {
       clearCart()
       navigate('/pedido-confirmado', { state: { orderId: order.id, nombre: order.nombre_cliente, total: order.total } })
     } catch {
-      setError('No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.')
+      const msg = 'No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
