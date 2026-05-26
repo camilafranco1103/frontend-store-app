@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useCartStore, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
 import { createGuestOrder } from '../services/orders.service'
@@ -71,6 +72,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [submitted, setSubmitted] = useState(false)
+  const toastId = useRef<string | number | undefined>()
 
   useEffect(() => {
     if (items.length === 0) navigate('/carrito', { replace: true })
@@ -78,10 +80,36 @@ export default function CheckoutPage() {
 
   const totalPrice = cartTotalPrice(items)
 
+  const mutation = useMutation({
+    mutationFn: createGuestOrder,
+    onMutate: () => {
+      toastId.current = toast.loading('Enviando tu pedido...')
+    },
+    onSuccess: (order) => {
+      toast.success(`¡Pedido #${order.id} confirmado!`, { id: toastId.current, duration: 5000 })
+      clearCart()
+      navigate('/pedido-confirmado', {
+        state: {
+          orderId: order.id,
+          nombre: order.nombre_cliente,
+          telefono: order.telefono,
+          total: order.total,
+          fecha: new Date().toISOString(),
+          resumen: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+        },
+      })
+    },
+    onError: () => {
+      toast.error('No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.', {
+        id: toastId.current,
+        duration: 5000,
+      })
+    },
+  })
+
   function touch(field: string) {
     setTouched((t) => ({ ...t, [field]: true }))
-    const errs = validate(nombre, telefono, notas)
-    setErrors(errs)
+    setErrors(validate(nombre, telefono, notas))
   }
 
   function showError(field: keyof FormErrors) {
@@ -100,7 +128,7 @@ export default function CheckoutPage() {
       }`
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitted(true)
 
@@ -112,39 +140,18 @@ export default function CheckoutPage() {
       return
     }
 
-    const toastId = toast.loading('Enviando tu pedido...')
-    try {
-      const order = await createGuestOrder({
-        nombre_cliente: nombre.trim(),
-        telefono: telefono.trim(),
-        notas: notas.trim() || undefined,
-        items: items.map((item: CartItem) => ({
-          producto_id: item.id,
-          cantidad: item.quantity,
-          nombre_snapshot: item.name,
-          precio_snapshot: item.price,
-          subtotal_snapshot: item.price * item.quantity,
-        })),
-      })
-
-      toast.success(`¡Pedido #${order.id} confirmado!`, { id: toastId, duration: 5000 })
-      clearCart()
-      navigate('/pedido-confirmado', {
-        state: {
-          orderId: order.id,
-          nombre: order.nombre_cliente,
-          telefono: order.telefono,
-          total: order.total,
-          fecha: new Date().toISOString(),
-          resumen: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-        },
-      })
-    } catch {
-      toast.error('No se pudo confirmar el pedido. Revisá tu conexión e intentá de nuevo.', {
-        id: toastId,
-        duration: 5000,
-      })
-    }
+    mutation.mutate({
+      nombre_cliente: nombre.trim(),
+      telefono: telefono.trim(),
+      notas: notas.trim() || undefined,
+      items: items.map((item: CartItem) => ({
+        producto_id: item.id,
+        cantidad: item.quantity,
+        nombre_snapshot: item.name,
+        precio_snapshot: item.price,
+        subtotal_snapshot: item.price * item.quantity,
+      })),
+    })
   }
 
   return (
@@ -243,11 +250,21 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
+            disabled={mutation.isPending}
             className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600
-              text-white font-semibold py-3.5 rounded-xl transition-colors"
+              disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-colors"
           >
-            Confirmar pedido
-            <ArrowRight size={16} />
+            {mutation.isPending ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              <>
+                Confirmar pedido
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </form>
 
