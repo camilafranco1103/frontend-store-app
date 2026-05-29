@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useCartStore, cartTotalPrice, type CartItem } from '../../../shared/store/cartStore'
+import { useCartStore, cartTotalPrice, type CartItem } from '../../../store/useCartStore'
 import { createGuestOrder } from '../services/orders.service'
 
 function formatPrice(price: number): string {

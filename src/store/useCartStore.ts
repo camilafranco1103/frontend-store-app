@@ -1,60 +1,61 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export interface CartItem {
   id: number
   name: string
   price: number
   quantity: number
+  imageSrc: string
 }
 
-interface CartStore {
+interface CartState {
   items: CartItem[]
-  addItem: (producto: { id: number; name: string; price: number }) => void
-  removeItem: (productoId: number) => void
-  updateQuantity: (productoId: number, cantidad: number) => void
+  addItem: (item: Omit<CartItem, 'quantity'>) => void
+  removeItem: (id: number) => void
+  updateQuantity: (id: number, quantity: number) => void
   clearCart: () => void
-  total: number
 }
 
-export const useCartStore = create<CartStore>((set, get) => ({
-  items: [],
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      items: [],
 
-  addItem: (producto) => {
-    const existing = get().items.find((i) => i.id === producto.id)
-    if (existing) {
-      set((state) => ({
-        items: state.items.map((i) =>
-          i.id === producto.id ? { ...i, quantity: i.quantity + 1 } : i
-        ),
-      }))
-    } else {
-      set((state) => ({
-        items: [...state.items, { ...producto, quantity: 1 }],
-      }))
-    }
-  },
+      addItem: (incoming) => {
+        const existing = get().items.find((i) => i.id === incoming.id)
+        if (existing) {
+          set((s) => ({
+            items: s.items.map((i) =>
+              i.id === incoming.id ? { ...i, quantity: i.quantity + 1 } : i,
+            ),
+          }))
+        } else {
+          set((s) => ({ items: [...s.items, { ...incoming, quantity: 1 }] }))
+        }
+      },
 
-  removeItem: (productoId) => {
-    set((state) => ({
-      items: state.items.filter((i) => i.id !== productoId),
-    }))
-  },
+      removeItem: (id) =>
+        set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
 
-  updateQuantity: (productoId, cantidad) => {
-    if (cantidad <= 0) {
-      get().removeItem(productoId)
-      return
-    }
-    set((state) => ({
-      items: state.items.map((i) =>
-        i.id === productoId ? { ...i, quantity: cantidad } : i
-      ),
-    }))
-  },
+      updateQuantity: (id, quantity) => {
+        if (quantity <= 0) {
+          get().removeItem(id)
+          return
+        }
+        set((s) => ({
+          items: s.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
+        }))
+      },
 
-  clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [] }),
+    }),
+    { name: 'app-cart' },
+  ),
+)
 
-  get total() {
-    return get().items.reduce((sum, i) => sum + i.price * i.quantity, 0)
-  },
-}))
+export const cartTotalItems = (items: CartItem[]) =>
+  items.reduce((sum, i) => sum + i.quantity, 0)
+
+export const cartTotalPrice = (items: CartItem[]) =>
+  items.reduce((sum, i) => sum + i.price * i.quantity, 0)

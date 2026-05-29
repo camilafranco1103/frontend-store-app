@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ShoppingCart, Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { CategoriaMap, Producto } from '../types'
-import { useCartStore } from '../../../shared/store/cartStore'
+import { useCartStore } from '../../../store/useCartStore'
 
 interface ProductCardProps {
   producto: Producto
