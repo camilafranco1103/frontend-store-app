@@ -4,8 +4,8 @@ import { ShoppingBag, ShoppingCart } from 'lucide-react'
 import { Toaster } from 'sonner'
 import ErrorBoundary from './shared/components/ErrorBoundary'
 import ThemeToggle from './shared/components/ThemeToggle'
-import { useThemeStore } from './shared/store/themeStore'
-import { useCartStore, cartTotalItems } from './shared/store/cartStore'
+import { useThemeStore } from './store/useThemeStore'
+import { useCartStore, cartTotalItems } from './store/useCartStore'
 
 export default function App() {
   const isDark = useThemeStore((s) => s.isDark)

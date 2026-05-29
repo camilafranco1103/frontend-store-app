@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ShoppingCart, Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { CategoriaMap, Producto } from '../types'
-import { useCartStore } from '../../../shared/store/cartStore'
+import { useCartStore } from '../../../store/useCartStore'
 
 interface ProductCardProps {
   producto: Producto
@@ -18,13 +18,13 @@ function formatPrice(price: number | null | undefined): string {
   })
 }
 
-const DEFAULT_IMAGE = 'https://i.ibb.co/233KrcLV/pizza.webp'
+const DEFAULT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='translate(32, 32) scale(1.5)'><rect width='18' height='18' x='3' y='3' rx='2' ry='2' fill='none' stroke='%23a8a29e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='9' cy='9' r='2' fill='none' stroke='%23a8a29e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/><path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' fill='none' stroke='%23a8a29e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></g></svg>"
 
 export default function ProductCard({ producto, categoriaMap }: ProductCardProps) {
   const categorias = producto.categorias ?? []
   const principalCat = categorias.find((c) => c.es_principal) ?? categorias[0]
   const categoria = principalCat ? categoriaMap.get(principalCat.categoria_id) : undefined
-  const imageSrc = categoria?.imagen_url ?? DEFAULT_IMAGE
+  const imageSrc = producto.imagen_url || categoria?.imagen_url || DEFAULT_IMAGE
 
   const addItem = useCartStore((s) => s.addItem)
   const updateQuantity = useCartStore((s) => s.updateQuantity)

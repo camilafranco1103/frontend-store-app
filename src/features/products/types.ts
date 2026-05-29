@@ -25,6 +25,7 @@ export interface Producto {
   price: number | null
   stock_cantidad: number | null
   disponible: boolean | null
+  imagen_url?: string | null
   categorias: ProductoCategoria[] | null
   ingredientes: ProductoIngrediente[] | null
 }
