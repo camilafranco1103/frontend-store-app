@@ -1,6 +1,17 @@
 import api from '../../../lib/axios'
 
-export interface GuestOrderItem {
+export interface PedidoItem {
+  id: number
+  pedido_id: number
+  producto_id: number
+  cantidad: number
+  nombre_snapshot: string
+  precio_snapshot: number
+  subtotal_snapshot: number
+  personalizacion: number
+}
+
+export interface PedidoItemCreate {
   producto_id: number
   cantidad: number
   nombre_snapshot: string
@@ -8,23 +19,35 @@ export interface GuestOrderItem {
   subtotal_snapshot: number
 }
 
-export interface GuestOrderPayload {
-  nombre_cliente: string
-  telefono: string
+export interface PedidoCreatePayload {
+  direccion_entrega_id: number
+  forma_pago_codigo: string
   notas?: string
-  items: GuestOrderItem[]
+  items: PedidoItemCreate[]
 }
 
-export interface GuestOrderResponse {
+export interface PedidoResponse {
   id: number
-  nombre_cliente: string | null
-  telefono: string | null
-  total: number
+  usuario_id: number
+  direccion_entrega_id: number
+  estado_codigo: string
+  forma_pago_codigo: string
   subtotal: number
+  descuento: number
+  costo_envio: number
+  total: number
+  notas: string | null
   created_at: string
+  updated_at: string
+  detalles_pedido?: PedidoItem[]
 }
 
-export async function createGuestOrder(payload: GuestOrderPayload): Promise<GuestOrderResponse> {
-  const { data } = await api.post<GuestOrderResponse>('/pedidos/guest', payload)
+export async function createOrder(payload: PedidoCreatePayload): Promise<PedidoResponse> {
+  const { data } = await api.post<PedidoResponse>('/pedidos/', payload)
+  return data
+}
+
+export async function getMyOrders(): Promise<PedidoResponse[]> {
+  const { data } = await api.get<PedidoResponse[]>('/pedidos/')
   return data
 }
