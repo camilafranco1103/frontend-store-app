@@ -48,12 +48,12 @@ const ESTADO_CONFIG: Record<string, EstadoConfig> = {
     bg: 'bg-blue-50 dark:bg-blue-950/20',
     border: 'border-blue-200 dark:border-blue-800',
   },
-  EN_PREPARACION: {
+  EN_PREP: {
     label: 'En Preparación',
-    icon: ChefHat,
     color: 'text-orange-600 dark:text-orange-400',
-    bg: 'bg-orange-50 dark:bg-orange-950/20',
-    border: 'border-orange-200 dark:border-orange-800',
+    bg: 'bg-orange-50 dark:bg-orange-500/10',
+    border: 'border-orange-200 dark:border-orange-500/20',
+    icon: ChefHat,
   },
   LISTO: {
     label: 'Listo',
@@ -94,7 +94,7 @@ function OrderCard({ order, onClick }: { order: PedidoResponse, onClick: (order:
   const isFinished = isCancelled || isDelivered
 
   // Array of linear steps
-  const orderSteps = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'LISTO', 'ENTREGADO']
+  const orderSteps = ['PENDIENTE', 'CONFIRMADO', 'EN_PREP', 'LISTO', 'ENTREGADO']
   const currentStepIndex = orderSteps.indexOf(order.estado_codigo)
 
   return (
