@@ -33,17 +33,17 @@ const AppRouter = () => (
     <Suspense fallback={<PageSpinner />}>
       <Routes>
 
-        {/* ── Rutas de invitado (fuera del Layout: login, registro) ─────── */}
-        {guestRoutes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={<GuestRoute>{route.element}</GuestRoute>}
-          />
-        ))}
-
         {/* ── Rutas dentro del Layout (navbar + contenido) ─────────────── */}
         <Route path="/" element={<Layout />}>
+
+          {/* Rutas de invitado (login, registro) */}
+          {guestRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={<GuestRoute>{route.element}</GuestRoute>}
+            />
+          ))}
 
           {/* Rutas públicas */}
           {publicRoutes.map((route) => (

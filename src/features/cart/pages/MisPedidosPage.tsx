@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { ClipboardList, ChevronRight, Clock, CheckCircle2, ChefHat, Package, XCircle, Truck } from 'lucide-react'
+import { ClipboardList, ChevronRight, Clock, CheckCircle2, ChefHat, Package, XCircle, Truck, Check } from 'lucide-react'
 import { getMyOrders, type PedidoResponse } from '../services/orders.service'
 import Spinner from '../../../shared/components/Spinner'
+import { useWebSocket } from '../../../shared/hooks/useWebSocket'
+import { useEffect, useState } from 'react'
+import Modal from '../../../shared/components/Modal'
 
 function formatPrice(price: number): string {
   return price.toLocaleString('es-AR', {
@@ -82,12 +85,23 @@ const FORMA_PAGO_LABELS: Record<string, string> = {
   TRANSFERENCIA: 'Transferencia',
 }
 
-function OrderCard({ order }: { order: PedidoResponse }) {
+function OrderCard({ order, onClick }: { order: PedidoResponse, onClick: (order: PedidoResponse) => void }) {
   const estado = ESTADO_CONFIG[order.estado_codigo] ?? ESTADO_CONFIG['PENDIENTE']
   const Icon = estado.icon
 
+  const isCancelled = order.estado_codigo === 'CANCELADO'
+  const isDelivered = order.estado_codigo === 'ENTREGADO'
+  const isFinished = isCancelled || isDelivered
+
+  // Array of linear steps
+  const orderSteps = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'LISTO', 'ENTREGADO']
+  const currentStepIndex = orderSteps.indexOf(order.estado_codigo)
+
   return (
-    <div className="bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-2xl p-5 space-y-4 hover:shadow-lg dark:hover:shadow-stone-950/60 transition-shadow duration-200">
+    <div 
+      onClick={() => onClick(order)}
+      className="bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-lg dark:hover:shadow-stone-950/60 transition-shadow duration-200 cursor-pointer"
+    >
       {/* Header row */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-0.5">
@@ -115,9 +129,49 @@ function OrderCard({ order }: { order: PedidoResponse }) {
         </div>
       </div>
 
+      {/* Stepper visual para pedidos activos */}
+      {!isFinished && currentStepIndex !== -1 && (
+        <div className="py-4">
+          <div className="relative flex justify-between items-center w-full max-w-md mx-auto">
+            {/* Background line */}
+            <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 h-1 bg-stone-100 dark:bg-stone-800 rounded-full z-0" />
+            
+            {/* Progress line */}
+            <div 
+              className="absolute left-[10%] top-1/2 -translate-y-1/2 h-1 bg-indigo-500 rounded-full z-0 transition-all duration-500" 
+              style={{ width: `${(currentStepIndex / (orderSteps.length - 1)) * 80}%` }}
+            />
+
+            {orderSteps.map((stepCode, idx) => {
+              const stepConfig = ESTADO_CONFIG[stepCode]
+              const StepIcon = stepConfig.icon
+              const isCompleted = idx < currentStepIndex
+              const isCurrent = idx === currentStepIndex
+              
+              return (
+                <div key={stepCode} className="relative z-10 flex flex-col items-center gap-2">
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border-2
+                      ${isCompleted ? 'bg-indigo-500 border-indigo-500 text-white' : 
+                        isCurrent ? 'bg-white dark:bg-stone-900 border-indigo-500 text-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 
+                        'bg-stone-50 dark:bg-stone-800/50 border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500'}`}
+                  >
+                    {isCompleted ? <Check size={14} strokeWidth={3} /> : <StepIcon size={14} />}
+                  </div>
+                  <span className={`text-[10px] font-semibold text-center w-16 leading-tight hidden sm:block
+                    ${isCompleted || isCurrent ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400 dark:text-stone-600'}`}>
+                    {stepConfig.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Items list */}
       {order.detalles_pedido && order.detalles_pedido.length > 0 && (
-        <div className="space-y-1.5 pt-1 border-t border-stone-100 dark:border-stone-800">
+        <div className="space-y-1.5 pt-1 border-t border-stone-100 dark:border-stone-800 mt-4">
           {order.detalles_pedido.slice(0, 3).map((item, idx) => (
             <div key={idx} className="flex justify-between text-xs text-stone-600 dark:text-stone-400">
               <span>
@@ -136,7 +190,7 @@ function OrderCard({ order }: { order: PedidoResponse }) {
       )}
 
       {/* Footer: payment method */}
-      <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-800">
+      <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800">
         <span className="text-xs text-stone-400 dark:text-stone-500">
           Pago: <span className="font-medium text-stone-600 dark:text-stone-400">
             {FORMA_PAGO_LABELS[order.forma_pago_codigo] ?? order.forma_pago_codigo}
@@ -148,10 +202,34 @@ function OrderCard({ order }: { order: PedidoResponse }) {
 }
 
 export default function MisPedidosPage() {
+  const queryClient = useQueryClient()
+  const [selectedOrder, setSelectedOrder] = useState<PedidoResponse | null>(null)
+  
   const { data: orders, isLoading, isError, error } = useQuery({
     queryKey: ['my-orders'],
     queryFn: getMyOrders,
   })
+
+  // Conexión a WebSockets para actualizaciones en tiempo real
+  const { lastMessage, isConnected, sendMessage } = useWebSocket(`ws://${window.location.host}/pedidos/ws`)
+
+  useEffect(() => {
+    if (isConnected && orders) {
+      orders.forEach((order) => {
+        const isFinished = order.estado_codigo === 'ENTREGADO' || order.estado_codigo === 'CANCELADO'
+        if (!isFinished) {
+          sendMessage('subscribe-order', { order_id: order.id })
+        }
+      })
+    }
+  }, [isConnected, orders, sendMessage])
+
+  useEffect(() => {
+    if (lastMessage) {
+      // Invalida la consulta de "my-orders" cuando el backend anuncia un cambio
+      queryClient.invalidateQueries({ queryKey: ['my-orders'] })
+    }
+  }, [lastMessage, queryClient])
 
   return (
     <div className="space-y-6">
@@ -210,10 +288,69 @@ export default function MisPedidosPage() {
             .slice()
             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
             .map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} onClick={setSelectedOrder} />
             ))}
         </div>
       )}
+
+      {/* Detalle del Pedido (Modal) */}
+      <Modal 
+        isOpen={selectedOrder !== null} 
+        onClose={() => setSelectedOrder(null)} 
+        title={`Detalle de Pedido #${selectedOrder?.id}`}
+      >
+        {selectedOrder && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center bg-stone-50 dark:bg-stone-800 p-4 rounded-xl border border-stone-100 dark:border-stone-700">
+              <div>
+                <p className="text-xs text-stone-500 dark:text-stone-400 uppercase font-semibold">Estado</p>
+                <p className={`text-sm font-bold mt-1 ${ESTADO_CONFIG[selectedOrder.estado_codigo]?.color || 'text-stone-600'}`}>
+                  {ESTADO_CONFIG[selectedOrder.estado_codigo]?.label || selectedOrder.estado_codigo}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-stone-500 dark:text-stone-400 uppercase font-semibold">Fecha</p>
+                <p className="text-sm font-medium text-stone-800 dark:text-stone-200 mt-1">
+                  {formatDate(selectedOrder.created_at)}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100 mb-3">Productos</h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                {selectedOrder.detalles_pedido?.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center p-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg border border-stone-100 dark:border-stone-800">
+                    <div className="flex items-center gap-3">
+                      <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-md text-xs">
+                        {item.cantidad}x
+                      </span>
+                      <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                        {item.nombre_snapshot}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
+                      {formatPrice(item.subtotal_snapshot)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t border-stone-100 dark:border-stone-800 pt-4 flex justify-between items-center">
+              <span className="font-semibold text-stone-600 dark:text-stone-400">Total</span>
+              <span className="text-xl font-bold text-indigo-500">{formatPrice(selectedOrder.total)}</span>
+            </div>
+            
+            <button
+              onClick={() => setSelectedOrder(null)}
+              className="w-full bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-semibold py-2.5 rounded-xl transition-colors mt-2"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

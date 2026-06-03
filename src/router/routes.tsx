@@ -72,15 +72,3 @@ export const notFoundRoute: AppRoute = {
   element: <NotFoundPage />,
 }
 
-// ── Constantes de paths ───────────────────────────────────────────────────────
-// Fuente única de verdad. Usar siempre estas constantes en lugar de strings.
-export const ROUTES = {
-  HOME:            '/',
-  PRODUCT_DETAIL:  (id: number | string) => `/productos/${id}`,
-  CART:            '/carrito',
-  CHECKOUT:        '/checkout',
-  ORDER_CONFIRMED: '/pedido-confirmado',
-  ORDERS:          '/mis-pedidos',
-  LOGIN:           '/login',
-  REGISTER:        '/registro',
-} as const

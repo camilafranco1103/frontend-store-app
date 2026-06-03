@@ -116,6 +116,7 @@ export default function CheckoutPage() {
   const orderMutation = useMutation({
     mutationFn: createOrder,
     onSuccess: (order) => {
+      queryClient.invalidateQueries({ queryKey: ['my-orders'] })
       toast.success(`¡Pedido #${order.id} confirmado!`, { duration: 5000 })
       clearCart()
       navigate('/pedido-confirmado', {

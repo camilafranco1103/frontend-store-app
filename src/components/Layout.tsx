@@ -13,7 +13,7 @@ import { Toaster, toast } from 'sonner'
 import { useThemeStore } from '../store/useThemeStore'
 import { useCartStore, cartTotalItems } from '../store/useCartStore'
 import { useAuthStore } from '../store/useAuthStore'
-import { ROUTES } from '../router/routes'
+import { ROUTES } from '../router/paths'
 import ThemeToggle from '../shared/components/ThemeToggle'
 import ErrorBoundary from '../shared/components/ErrorBoundary'
 

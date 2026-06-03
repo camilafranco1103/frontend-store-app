@@ -9,7 +9,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuthStore } from '../store/useAuthStore'
-import { ROUTES } from './routes'
+import { ROUTES } from './paths'
 import Spinner from '../shared/components/Spinner'
 
 // ── Shared loader ─────────────────────────────────────────────────────────────
