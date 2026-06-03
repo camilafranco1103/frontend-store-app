@@ -103,6 +103,15 @@ export default function Layout() {
                       </div>
 
                       <Link
+                        to={ROUTES.PROFILE}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-500 dark:hover:text-indigo-400 transition"
+                      >
+                        <User size={15} />
+                        Mi Perfil
+                      </Link>
+
+                      <Link
                         to={ROUTES.ORDERS}
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-500 dark:hover:text-indigo-400 transition"

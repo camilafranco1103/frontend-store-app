@@ -13,6 +13,7 @@ export const ROUTES = {
   ORDERS:          '/mis-pedidos',
   LOGIN:           '/login',
   REGISTER:        '/registro',
+  PROFILE:         '/perfil',
 } as const
 
 export type StaticRoute = Exclude<(typeof ROUTES)[keyof typeof ROUTES], Function>

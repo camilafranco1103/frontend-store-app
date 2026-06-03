@@ -22,6 +22,7 @@ const OrderConfirmedPage= lazy(() => import('../features/cart/pages/OrderConfirm
 const MisPedidosPage    = lazy(() => import('../features/cart/pages/MisPedidosPage'))
 const LoginPage         = lazy(() => import('../features/auth/pages/LoginPage'))
 const RegisterPage      = lazy(() => import('../features/auth/pages/RegisterPage'))
+const ProfilePage       = lazy(() => import('../features/auth/pages/ProfilePage'))
 const NotFoundPage      = lazy(() => import('../shared/pages/NotFoundPage'))
 
 // ── Tipo de configuración de ruta ─────────────────────────────────────────────
@@ -62,6 +63,7 @@ export const privateRoutes: AppRoute[] = [
   { path: 'checkout',          element: <CheckoutPage />,      requiresAuth: true },
   { path: 'pedido-confirmado', element: <OrderConfirmedPage />, requiresAuth: true },
   { path: 'mis-pedidos',       element: <MisPedidosPage />,    requiresAuth: true },
+  { path: 'perfil',            element: <ProfilePage />,       requiresAuth: true },
 ]
 
 /**

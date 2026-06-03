@@ -41,3 +41,16 @@ export async function getMe(): Promise<User> {
   const { data } = await api.get<User>('/auth/me')
   return data
 }
+
+export interface UpdateProfileParams {
+  name?: string
+  lastname?: string
+  email?: string
+  phone_number?: number | null
+  password?: string
+}
+
+export async function updateProfile(params: UpdateProfileParams): Promise<User> {
+  const { data } = await api.patch<User>('/auth/me', params)
+  return data
+}

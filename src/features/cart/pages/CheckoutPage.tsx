@@ -145,21 +145,13 @@ export default function CheckoutPage() {
       errs.ciudad = 'La calle es obligatoria'
     }
 
-    const alturaNum = Number(addressAltura.trim())
     if (!addressAltura.trim()) {
       errs.linea1 = 'La altura/número es obligatoria'
-    } else if (isNaN(alturaNum) || !Number.isInteger(alturaNum) || alturaNum <= 0) {
-      errs.linea1 = 'Debe ser un número entero positivo'
     }
 
-    let pisoDeptoVal: number | null = null
+    let pisoDeptoVal: string | null = null
     if (addressPisoDepto.trim()) {
-      const parsedPiso = Number(addressPisoDepto.trim())
-      if (isNaN(parsedPiso) || !Number.isInteger(parsedPiso) || parsedPiso < 0) {
-        errs.linea2 = 'Debe ser un número entero'
-      } else {
-        pisoDeptoVal = parsedPiso
-      }
+      pisoDeptoVal = addressPisoDepto.trim()
     }
 
     if (!addressProvincia.trim()) {
@@ -180,7 +172,7 @@ export default function CheckoutPage() {
     setIsSavingAddress(true)
     saveAddressMutation.mutate({
       alias: addressAlias.trim() || null,
-      linea1: alturaNum,
+      linea1: addressAltura.trim(),
       linea2: pisoDeptoVal,
       ciudad: addressCalle.trim(),
       provincia: addressProvincia.trim(),

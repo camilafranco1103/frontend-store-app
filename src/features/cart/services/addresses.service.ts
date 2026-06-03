@@ -4,8 +4,8 @@ export interface DireccionEntrega {
   id: number
   usuario_id: number | null
   alias: string | null
-  linea1: number
-  linea2: number | null
+  linea1: string
+  linea2: string | null
   ciudad: string
   provincia: string
   codigo_postal: string
@@ -16,8 +16,8 @@ export interface DireccionEntrega {
 
 export interface DireccionEntregaCreate {
   alias?: string | null
-  linea1: number // Representa la altura/número
-  linea2?: number | null // Representa piso/depto (número)
+  linea1: string // Representa la altura/número
+  linea2?: string | null // Representa piso/depto (número o letra)
   ciudad: string // Representa la calle o calle y ciudad
   provincia: string
   codigo_postal: string

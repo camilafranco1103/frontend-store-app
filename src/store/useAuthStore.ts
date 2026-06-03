@@ -20,6 +20,7 @@ interface AuthState {
   hasRole: (...roles: string[]) => boolean
   login: (params: LoginParams) => Promise<void>
   register: (params: RegisterParams) => Promise<void>
+  updateProfile: (params: import('../features/auth/services/auth.service').UpdateProfileParams) => Promise<void>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
 }
@@ -64,6 +65,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: null, isAuthenticated: false })
       throw error
     }
+  },
+
+  updateProfile: async (params) => {
+    const { updateProfile: apiUpdateProfile } = await import('../features/auth/services/auth.service')
+    const user = await apiUpdateProfile(params)
+    set({ user })
   },
 
   logout: async () => {
