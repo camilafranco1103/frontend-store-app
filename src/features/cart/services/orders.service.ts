@@ -51,3 +51,13 @@ export async function getMyOrders(): Promise<PedidoResponse[]> {
   const { data } = await api.get<PedidoResponse[]>('/pedidos/')
   return data
 }
+
+export async function getOrderById(id: number | string): Promise<PedidoResponse> {
+  const { data } = await api.get<PedidoResponse>(`/pedidos/${id}`)
+  return data
+}
+
+export async function createPaymentPreference(pedidoId: number): Promise<{ checkout_url: string }> {
+  const { data } = await api.post<{ checkout_url: string }>(`/pagos/preferencia/${pedidoId}`)
+  return data
+}

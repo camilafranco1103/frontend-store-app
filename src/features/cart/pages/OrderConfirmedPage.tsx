@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useSearchParams, Navigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getOrderById } from '../services/orders.service'
+import { useWebSocket } from '../../../shared/hooks/useWebSocket'
 import { CheckCircle, ShoppingBag, Phone, User, Clock, ChefHat, Package } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -31,25 +34,73 @@ function formatDate(iso?: string): string {
   })
 }
 
-const STATUS_STEPS = [
-  { icon: CheckCircle, label: 'Recibido', done: true },
-  { icon: ChefHat, label: 'En preparación', done: false },
-  { icon: Package, label: 'Listo', done: false },
-]
+const ORDER_STEPS = ['PENDIENTE', 'CONFIRMADO', 'EN_PREP', 'LISTO', 'ENTREGADO']
 
 export default function OrderConfirmedPage() {
   const location = useLocation()
-  const { orderId, nombre, telefono, total, fecha, resumen } =
-    (location.state ?? {}) as OrderState
+  const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
+  const urlOrderId = searchParams.get('order_id')
+
+  // Estado del react router (solo disponible si paga en efectivo)
+  const stateData = (location.state ?? {}) as OrderState
+
+  // Si no hay stateData pero hay urlOrderId, buscamos el pedido al backend (flujo Mercado Pago)
+  const orderId = stateData.orderId || (urlOrderId ? parseInt(urlOrderId, 10) : undefined)
+
+  const { data: fetchedOrder, isLoading, isError } = useQuery({
+    queryKey: ['order', orderId],
+    queryFn: () => getOrderById(orderId!),
+    enabled: !!orderId,
+  })
+
+  // Mezclamos la info: damos prioridad al state, si no, usamos el fetched
+  const nombre = stateData.nombre || 'Cliente'
+  const telefono = stateData.telefono || ''
+  const total = stateData.total ?? fetchedOrder?.total
+  const fecha = stateData.fecha || fetchedOrder?.created_at
+  const resumen = stateData.resumen || (fetchedOrder?.detalles_pedido?.map(d => ({
+    name: d.nombre_snapshot,
+    quantity: d.cantidad,
+    price: d.precio_snapshot
+  })))
+
+  // Conexión WebSocket para tiempo real
+  const { lastMessage, isConnected, sendMessage } = useWebSocket(`ws://${window.location.host}/pedidos/ws`)
 
   useEffect(() => {
-    toast.success(
-      orderId != null ? `Pedido #${orderId} confirmado con éxito` : 'Pedido confirmado con éxito',
-      { duration: 5000 },
-    )
-  }, [orderId])
+    if (isConnected && orderId) {
+      sendMessage('subscribe-order', { order_id: orderId })
+    }
+  }, [isConnected, orderId, sendMessage])
+
+  useEffect(() => {
+    if (lastMessage && orderId) {
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+    }
+  }, [lastMessage, orderId, queryClient])
+
+  useEffect(() => {
+    if (orderId && (stateData.resumen || fetchedOrder)) {
+      toast.success(`Pedido #${orderId} confirmado con éxito`, { duration: 5000, id: 'order-success' })
+    }
+  }, [orderId, stateData.resumen, fetchedOrder])
+
+  // Redireccionar si no hay orderId, o si hay un error, o si el pedido fue cancelado
+  if (!orderId || isError || fetchedOrder?.estado_codigo === 'CANCELADO') {
+    return <Navigate to="/mis-pedidos" replace />
+  }
 
   const firstName = nombre?.split(' ')[0]
+
+  if (isLoading && !stateData.resumen && !fetchedOrder) {
+    return (
+      <div className="max-w-lg mx-auto py-20 flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full" />
+        <p className="text-stone-500 dark:text-stone-400">Cargando detalles de tu compra...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-lg mx-auto py-10 space-y-6">
@@ -82,16 +133,31 @@ export default function OrderConfirmedPage() {
         <h2 className="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-4">
           Estado del pedido
         </h2>
+        
         <div className="flex items-center justify-between relative">
           <div className="absolute top-4 left-[calc(16.67%)] right-[calc(16.67%)] h-0.5 bg-stone-200 dark:bg-stone-700" />
-          {STATUS_STEPS.map((step, i) => {
+          
+          {[
+            { code: 'CONFIRMADO', label: 'Recibido', icon: CheckCircle },
+            { code: 'EN_PREP', label: 'En preparación', icon: ChefHat },
+            { code: 'LISTO', label: 'Listo', icon: Package }
+          ].map((step, i) => {
             const Icon = step.icon
+            // Determinamos si el paso actual está completado basado en el fetchedOrder.estado_codigo
+            const currentStatusCode = fetchedOrder?.estado_codigo || 'PENDIENTE'
+            const currentIdx = ORDER_STEPS.indexOf(currentStatusCode)
+            const stepIdx = ORDER_STEPS.indexOf(step.code)
+            
+            // Si el índice del estado actual es mayor o igual al de este paso, está completado
+            // Y si es PENDIENTE (índice 0), todos están en gris.
+            const isDone = currentIdx >= stepIdx
+
             return (
               <div key={i} className="flex flex-col items-center gap-2 z-10 flex-1">
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
-                    step.done
-                      ? 'bg-indigo-500 border-indigo-500 text-white'
+                    isDone
+                      ? 'bg-indigo-500 border-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]'
                       : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-400'
                   }`}
                 >
@@ -99,7 +165,7 @@ export default function OrderConfirmedPage() {
                 </div>
                 <span
                   className={`text-xs font-medium text-center ${
-                    step.done
+                    isDone
                       ? 'text-indigo-500 dark:text-indigo-400'
                       : 'text-stone-400 dark:text-stone-500'
                   }`}
@@ -177,14 +243,23 @@ export default function OrderConfirmedPage() {
         </div>
       )}
 
-      {/* CTA */}
-      <Link
-        to="/"
-        className="flex items-center justify-center gap-2 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3.5 rounded-xl transition-colors"
-      >
-        <ShoppingBag size={16} />
-        Seguir comprando
-      </Link>
+      {/* CTAs */}
+      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+        <Link
+          to="/mis-pedidos"
+          className="flex-1 flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 rounded-xl transition-colors"
+        >
+          <Package size={16} />
+          Ver mis pedidos
+        </Link>
+        <Link
+          to="/"
+          className="flex-1 flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-semibold py-3 rounded-xl transition-colors border border-transparent dark:border-stone-700"
+        >
+          <ShoppingBag size={16} />
+          Seguir comprando
+        </Link>
+      </div>
     </div>
   )
 }
