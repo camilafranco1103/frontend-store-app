@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ClipboardList, ChevronRight, Clock, CheckCircle2, ChefHat, Package, XCircle, Truck, Check } from 'lucide-react'
 import { getMyOrders, type PedidoResponse } from '../services/orders.service'
 import Spinner from '../../../shared/components/Spinner'
-import { useWebSocket } from '../../../shared/hooks/useWebSocket'
+import { useOrderStatusWS } from '../../../shared/hooks/useOrderStatusWS'
 import { useEffect, useState } from 'react'
 import Modal from '../../../shared/components/Modal'
 
@@ -211,7 +211,7 @@ export default function MisPedidosPage() {
   })
 
   // Conexión a WebSockets para actualizaciones en tiempo real
-  const { lastMessage, isConnected, sendMessage } = useWebSocket(`ws://${window.location.host}/pedidos/ws`)
+  const { lastMessage, isConnected, sendMessage } = useOrderStatusWS(`ws://${window.location.host}/pedidos/ws`)
 
   useEffect(() => {
     if (isConnected && orders) {

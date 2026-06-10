@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getOrderById } from '../services/orders.service'
-import { useWebSocket } from '../../../shared/hooks/useWebSocket'
+import { useOrderStatusWS } from '../../../shared/hooks/useOrderStatusWS'
 import { CheckCircle, ShoppingBag, Phone, User, Clock, ChefHat, Package } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -66,7 +66,7 @@ export default function OrderConfirmedPage() {
   })))
 
   // Conexión WebSocket para tiempo real
-  const { lastMessage, isConnected, sendMessage } = useWebSocket(`ws://${window.location.host}/pedidos/ws`)
+  const { lastMessage, isConnected, sendMessage } = useOrderStatusWS(`ws://${window.location.host}/pedidos/ws`)
 
   useEffect(() => {
     if (isConnected && orderId) {

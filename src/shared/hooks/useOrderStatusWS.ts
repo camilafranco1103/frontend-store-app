@@ -1,23 +1,34 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useWsStore } from '../../store/useWsStore';
 
 type WebSocketEvent = {
   event: string;
   data: any;
 };
 
-export const useWebSocket = (url: string) => {
-  const [isConnected, setIsConnected] = useState(false);
+/**
+ * Hook para la conexión WebSocket del Cliente (Estado de Pedidos).
+ * Implementa Reconexión Exponencial (Exponential Backoff) y actualiza el estado global (useWsStore).
+ */
+export const useOrderStatusWS = (url: string) => {
+  const setIsConnected = useWsStore((state) => state.setIsConnected);
+  const isConnected = useWsStore((state) => state.isConnected);
   const [lastMessage, setLastMessage] = useState<WebSocketEvent | null>(null);
+  
   const ws = useRef<WebSocket | null>(null);
+  const reconnectInterval = useRef<number>(1000); // Inicia en 1 segundo
+  const maxReconnectInterval = 30000; // Máximo 30 segundos
+  const isComponentUnmounted = useRef<boolean>(false);
 
   const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) return;
+    if (ws.current?.readyState === WebSocket.OPEN || isComponentUnmounted.current) return;
 
     ws.current = new WebSocket(url);
 
     ws.current.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected (Order Status)');
       setIsConnected(true);
+      reconnectInterval.current = 1000; // Resetear backoff en éxito
     };
 
     ws.current.onmessage = (event) => {
@@ -33,18 +44,28 @@ export const useWebSocket = (url: string) => {
     ws.current.onclose = (event) => {
       console.log('WebSocket disconnected:', event.reason);
       setIsConnected(false);
-      // Reconnect after 3 seconds
-      setTimeout(connect, 3000);
+      
+      if (!isComponentUnmounted.current) {
+        // Exponential backoff
+        console.log(`Reconnecting in ${reconnectInterval.current}ms...`);
+        setTimeout(() => {
+          connect();
+        }, reconnectInterval.current);
+        
+        reconnectInterval.current = Math.min(reconnectInterval.current * 2, maxReconnectInterval);
+      }
     };
 
     ws.current.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
-  }, [url]);
+  }, [url, setIsConnected]);
 
   useEffect(() => {
+    isComponentUnmounted.current = false;
     connect();
     return () => {
+      isComponentUnmounted.current = true;
       if (ws.current) {
         ws.current.close();
       }
