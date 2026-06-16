@@ -1,3 +1,6 @@
+Trabajo Integrador video explicacion https://drive.google.com/file/d/1WWHz56UHx-c8zXCPJy8df2C2pilhEvHS/view?usp=sharing
+
+
 # frontend-store
 
 Tienda pública para el cliente final. Permite explorar productos, ver detalles y armar un carrito de compras.
