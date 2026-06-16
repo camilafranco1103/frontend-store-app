@@ -9,7 +9,7 @@ import { getAddresses, createAddress, deleteAddress } from '../services/addresse
 import { createOrder, createPaymentPreference } from '../services/orders.service'
 
 import AddressSelection from '../components/checkout/AddressSelection'
-import NewAddressForm from '../components/checkout/NewAddressForm'
+import AddressForm from '../components/checkout/AddressForm'
 import PaymentMethodSelection from '../components/checkout/PaymentMethodSelection'
 import CheckoutNotes from '../components/checkout/CheckoutNotes'
 import OrderSummarySidebar from '../components/checkout/OrderSummarySidebar'
@@ -189,7 +189,7 @@ export default function CheckoutPage() {
             />
 
             {showNewAddressForm && (
-              <NewAddressForm
+              <AddressForm
                 isSaving={saveAddressMutation.isPending}
                 isFirstAddress={addresses.length === 0}
                 onSave={(data) => saveAddressMutation.mutate(data)}

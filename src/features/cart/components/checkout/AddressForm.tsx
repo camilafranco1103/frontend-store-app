@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { DireccionEntregaCreate } from '../../services/addresses.service'
+import type { DireccionEntrega, DireccionEntregaCreate } from '../../services/addresses.service'
 
 interface AddressFormErrors {
   alias?: string
@@ -12,25 +12,27 @@ interface AddressFormErrors {
   codigo_postal?: string
 }
 
-interface NewAddressFormProps {
+interface AddressFormProps {
   onCancel: () => void
   onSave: (addressData: DireccionEntregaCreate) => void
   isSaving: boolean
   isFirstAddress: boolean
+  initialData?: DireccionEntrega
 }
 
-export default function NewAddressForm({
+export default function AddressForm({
   onCancel,
   onSave,
   isSaving,
   isFirstAddress,
-}: NewAddressFormProps) {
-  const [addressAlias, setAddressAlias] = useState('')
-  const [addressCalle, setAddressCalle] = useState('')
-  const [addressAltura, setAddressAltura] = useState('')
-  const [addressPisoDepto, setAddressPisoDepto] = useState('')
-  const [addressProvincia, setAddressProvincia] = useState('Buenos Aires')
-  const [addressCp, setAddressCp] = useState('')
+  initialData,
+}: AddressFormProps) {
+  const [addressAlias, setAddressAlias] = useState(initialData?.alias || '')
+  const [addressCalle, setAddressCalle] = useState(initialData?.ciudad || '')
+  const [addressAltura, setAddressAltura] = useState(initialData?.linea1 || '')
+  const [addressPisoDepto, setAddressPisoDepto] = useState(initialData?.linea2 || '')
+  const [addressProvincia, setAddressProvincia] = useState(initialData?.provincia || 'Buenos Aires')
+  const [addressCp, setAddressCp] = useState(initialData?.codigo_postal || '')
   const [addressErrors, setAddressErrors] = useState<AddressFormErrors>({})
 
   function handleSubmit(e: React.FormEvent) {
@@ -78,7 +80,9 @@ export default function NewAddressForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 border border-stone-100 dark:border-stone-800 p-4 rounded-xl mt-4">
-      <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200">Nueva dirección de envío</h3>
+      <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200">
+        {initialData ? 'Editar dirección' : 'Nueva dirección de envío'}
+      </h3>
       
       {/* Alias */}
       <div className="space-y-1">

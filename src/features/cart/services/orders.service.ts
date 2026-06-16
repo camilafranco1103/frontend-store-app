@@ -47,8 +47,26 @@ export async function createOrder(payload: PedidoCreatePayload): Promise<PedidoR
   return data
 }
 
-export async function getMyOrders(): Promise<PedidoResponse[]> {
-  const { data } = await api.get<PedidoResponse[]>('/pedidos/')
+export interface PaginatedPedidosRead {
+  items: PedidoResponse[]
+  total: number
+  page: number
+  size: number
+  total_pages: number
+}
+
+export async function getMyOrders(page: number = 1, size: number = 10, estado?: string, search?: string): Promise<PaginatedPedidosRead> {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  params.append('size', size.toString())
+  if (estado) {
+    params.append('estado', estado)
+  }
+  if (search) {
+    params.append('search', search)
+  }
+  
+  const { data } = await api.get<PaginatedPedidosRead>(`/pedidos/mis-pedidos?${params.toString()}`)
   return data
 }
 

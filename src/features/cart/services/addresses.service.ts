@@ -36,6 +36,11 @@ export async function createAddress(address: DireccionEntregaCreate): Promise<Di
   return data
 }
 
+export async function updateAddress(id: number, address: Partial<DireccionEntregaCreate>): Promise<DireccionEntrega> {
+  const { data } = await api.patch<DireccionEntrega>(`/direccionEntrega/${id}`, address)
+  return data
+}
+
 export async function deleteAddress(id: number): Promise<void> {
   await api.delete(`/direccionEntrega/${id}`)
 }

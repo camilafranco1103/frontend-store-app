@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { ClipboardList, ChevronRight, Clock, CheckCircle2, ChefHat, Package, XCircle, Truck, Check } from 'lucide-react'
+import { ClipboardList, ChevronRight, Clock, CheckCircle2, ChefHat, Package, XCircle, Truck, Check, ChevronLeft, Search } from 'lucide-react'
 import { getMyOrders, type PedidoResponse } from '../services/orders.service'
 import Spinner from '../../../shared/components/Spinner'
 import { useOrderStatusWS } from '../../../shared/hooks/useOrderStatusWS'
@@ -205,24 +205,38 @@ export default function MisPedidosPage() {
   const queryClient = useQueryClient()
   const [selectedOrder, setSelectedOrder] = useState<PedidoResponse | null>(null)
   
-  const { data: orders, isLoading, isError, error } = useQuery({
-    queryKey: ['my-orders'],
-    queryFn: getMyOrders,
+  const [activeTab, setActiveTab] = useState<'activos' | 'historial'>('activos')
+  const [page, setPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const limit = 5
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setPage(1) // Volver a la página 1 cuando se busca
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const { data: response, isLoading, isError, error } = useQuery({
+    queryKey: ['my-orders', activeTab, page, debouncedSearch],
+    queryFn: () => getMyOrders(page, limit, activeTab === 'activos' ? 'ACTIVOS' : 'FINALIZADOS', debouncedSearch || undefined),
   })
 
   // Conexión a WebSockets para actualizaciones en tiempo real
   const { lastMessage, isConnected, sendMessage } = useOrderStatusWS(`ws://${window.location.host}/pedidos/ws`)
 
   useEffect(() => {
-    if (isConnected && orders) {
-      orders.forEach((order) => {
+    if (isConnected && response?.items) {
+      response.items.forEach((order) => {
         const isFinished = order.estado_codigo === 'ENTREGADO' || order.estado_codigo === 'CANCELADO'
         if (!isFinished) {
           sendMessage('subscribe-order', { order_id: order.id })
         }
       })
     }
-  }, [isConnected, orders, sendMessage])
+  }, [isConnected, response, sendMessage])
 
   useEffect(() => {
     if (lastMessage) {
@@ -230,6 +244,9 @@ export default function MisPedidosPage() {
       queryClient.invalidateQueries({ queryKey: ['my-orders'] })
     }
   }, [lastMessage, queryClient])
+  
+  const orders = response?.items || []
+  const totalPages = response?.total_pages || 1
 
   return (
     <div className="space-y-6">
@@ -246,6 +263,45 @@ export default function MisPedidosPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-stone-200 dark:border-stone-800">
+        <button
+          onClick={() => { setActiveTab('activos'); setPage(1); setSearchTerm(''); }}
+          className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'activos'
+              ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+              : 'border-transparent text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300'
+          }`}
+        >
+          En Curso
+        </button>
+        <button
+          onClick={() => { setActiveTab('historial'); setPage(1); }}
+          className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'historial'
+              ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+              : 'border-transparent text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300'
+          }`}
+        >
+          Historial
+        </button>
+      </div>
+
+      {activeTab === 'historial' && (
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search size={18} className="text-stone-400" />
+          </div>
+          <input
+            type="text"
+            className="w-full pl-10 pr-4 py-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-stone-900 transition-all text-stone-800 dark:text-stone-100 placeholder-stone-400"
+            placeholder="Buscar por número de pedido (ej: 12)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      )}
+
       {/* Content */}
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -260,36 +316,61 @@ export default function MisPedidosPage() {
         </div>
       )}
 
-      {!isLoading && !isError && orders && orders.length === 0 && (
+      {!isLoading && !isError && orders.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
           <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-stone-100 dark:bg-stone-800">
             <ClipboardList size={36} className="text-stone-400 dark:text-stone-500" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100">Sin pedidos aún</h2>
+            <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100">Sin pedidos {activeTab === 'activos' ? 'en curso' : 'en el historial'}</h2>
             <p className="text-stone-500 dark:text-stone-400 text-sm max-w-xs">
-              Todavía no realizaste ningún pedido. ¡Explorá el catálogo y hacé tu primera compra!
+              {activeTab === 'activos' 
+                ? 'No tenés ningún pedido pendiente de entrega.'
+                : 'Todavía no tenés pedidos finalizados.'}
             </p>
           </div>
-          <Link
-            to="/"
-            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium transition-colors text-sm"
-          >
-            Ver productos
-            <ChevronRight size={15} />
-          </Link>
+          {activeTab === 'activos' && (
+            <Link
+              to="/"
+              className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium transition-colors text-sm mt-2"
+            >
+              Hacer un pedido
+              <ChevronRight size={15} />
+            </Link>
+          )}
         </div>
       )}
 
-      {!isLoading && !isError && orders && orders.length > 0 && (
+      {!isLoading && !isError && orders.length > 0 && (
         <div className="space-y-4">
-          {/* Pedidos activos primero */}
-          {orders
-            .slice()
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            .map((order) => (
-              <OrderCard key={order.id} order={order} onClick={setSelectedOrder} />
-            ))}
+          {orders.map((order) => (
+            <OrderCard key={order.id} order={order} onClick={setSelectedOrder} />
+          ))}
+          
+          {/* Controles de Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-stone-100 dark:border-stone-800">
+              <span className="text-sm text-stone-500 dark:text-stone-400">
+                Página {page} de {totalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  className="p-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg text-stone-600 dark:text-stone-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  className="p-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg text-stone-600 dark:text-stone-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
